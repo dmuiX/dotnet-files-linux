@@ -74,3 +74,7 @@ autoload -Uz compinit; compinit -u
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
 PATH=/opt/docker-credential-pass:$PATH
+
+. "$HOME/.atuin/bin/env"
+
+eval "$(atuin init zsh)"
