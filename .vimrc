@@ -1,11 +1,12 @@
-#colors argonaut
+colors argonaut
 set number
+nnoremap <F3> :set number!<CR>
 set smartindent
 set autoindent
 set shiftwidth=4
 set tabstop=4
 set pastetoggle=<F2>
-nnoremap <F3> :set number!<CR>
+set expandtab
 set backspace=indent,eol,start
 
 syntax on
@@ -21,7 +22,9 @@ endif
 call plug#begin('~/.vim/plugged')
         Plug 'vim-airline/vim-airline'
         Plug 'vim-airline/vim-airline-themes'
-		Plug 'farmergreg/vim-lastplace'
+		    Plug 'farmergreg/vim-lastplace'
+        Plug 'elzr/vim-json'
+        Plug 'vim-shairport/vim-shairport'
 call plug#end()
 
 let g:airline_powerline_fonts = 1
