@@ -22,7 +22,7 @@ endif
 call plug#begin('~/.vim/plugged')
         Plug 'vim-airline/vim-airline'
         Plug 'vim-airline/vim-airline-themes'
-		    Plug 'farmergreg/vim-lastplace'
+        Plug 'farmergreg/vim-lastplace'
         Plug 'elzr/vim-json'
         Plug 'vim-shairport/vim-shairport'
 call plug#end()
