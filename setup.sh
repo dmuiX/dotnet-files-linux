@@ -84,6 +84,7 @@ echo "[dotfiles] Ensuring Zsh plugins…"
 git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
 git clone https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 git clone https://github.com/zsh-users/zsh-completions "$ZSH_CUSTOM/plugins/zsh-completions"
+git clone 
 echo "[dotfiles] Zsh plugins ready."
 
 ###############################################################################
@@ -110,6 +111,42 @@ fi
 if ! grep -q '\. "\$HOME/.atuin/bin/env"' "$ZSHRC" 2>/dev/null; then
   echo '. "$HOME/.atuin/bin/env"' >> "$ZSHRC"
   echo "[dotfiles] Added Atuin env include to .zshrc"
+fi
+
+###############################################################################
+# 5. Meslo LGS NF im Container ablegen
+###############################################################################
+
+if [[ $(uname -s) == Linux && ! -f ~/.local/share/fonts/'MesloLGS NF Regular.ttf' ]]; then
+  echo "[dotfiles] Installing Meslo LGS NF fonts (container‑local)…"
+  MESLO_URL_BASE="https://github.com/romkatv/powerlevel10k-media/raw/master"
+  mkdir -p ~/.local/share/fonts
+  for font in \
+    'MesloLGS NF Regular.ttf' \
+    'MesloLGS NF Bold.ttf' \
+    'MesloLGS NF Italic.ttf' \
+    'MesloLGS NF Bold Italic.ttf'
+  do
+    curl -fsSL "$MESLO_URL_BASE/${font// /%20}" -o "~/.local/share/fonts/$font"
+  done
+  fc-cache -f
+fi
+
+###############################################################################
+# 6. Powerlevel10k installieren
+###############################################################################
+
+if [[ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]]; then
+  echo "[dotfiles] Installing Powerlevel10k…"
+  git clone --depth 1 https://github.com/romkatv/powerlevel10k.git \
+    "$ZSH_CUSTOM/themes/powerlevel10k"
+fi
+
+# ZSH_THEME setzen/ersetzen
+if grep -q '^ZSH_THEME=' ~/.zshrc; then
+  sed -i.bak 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
+else
+  echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> ~/.zshrc
 fi
 
 ###############################################################################
