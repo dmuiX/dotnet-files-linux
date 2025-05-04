@@ -133,19 +133,22 @@ fi
 # 5. Meslo LGS NF im Container ablegen
 ###############################################################################
 
-if [[ $(uname -s) == Linux && ! -f ~/.local/share/fonts/'MesloLGS NF Regular.ttf' ]]; then
-  echo "[dotfiles] Installing Meslo LGS NF fonts (container‑local)…"
-  MESLO_URL_BASE="https://github.com/romkatv/powerlevel10k-media/raw/master"
-  mkdir -p ~/.local/share/fonts
-  for font in \
-    'MesloLGS NF Regular.ttf' \
-    'MesloLGS NF Bold.ttf' \
-    'MesloLGS NF Italic.ttf' \
-    'MesloLGS NF Bold Italic.ttf'
-  do
-    curl -fsSL "$MESLO_URL_BASE/${font// /%20}" -o "~/.local/share/fonts/$font"
-  done
-  fc-cache -f
+if [[ $(uname -s) == Linux ]]; then
+  FONT_DIR="$HOME/.local/share/fonts"
+  if [[ ! -f "$FONT_DIR/MesloLGS NF Regular.ttf" ]]; then
+    echo "[dotfiles] Installing Meslo LGS NF fonts (container‑local)…"
+    MESLO_URL_BASE="https://github.com/romkatv/powerlevel10k-media/raw/master"
+    mkdir -p "$FONT_DIR"
+    for font in \
+      'MesloLGS NF Regular.ttf' \
+      'MesloLGS NF Bold.ttf' \
+      'MesloLGS NF Italic.ttf' \
+      'MesloLGS NF Bold Italic.ttf'
+    do
+      curl -fsSL "$MESLO_URL_BASE/${font// /%20}" -o "$FONT_DIR/$font"
+    done
+    fc-cache -f
+  fi
 fi
 
 ###############################################################################
