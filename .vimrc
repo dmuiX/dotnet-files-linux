@@ -1,4 +1,4 @@
-colors argonaut
+colorscheme argonaut
 set number
 nnoremap <F3> :set number!<CR>
 set smartindent
@@ -25,6 +25,7 @@ call plug#begin('~/.vim/plugged')
         Plug 'farmergreg/vim-lastplace'
         Plug 'elzr/vim-json'
         Plug 'vim-shairport/vim-shairport'
+        Plug 'flazz/vim-colorschemes'
 call plug#end()
 
 let g:airline_powerline_fonts = 1
