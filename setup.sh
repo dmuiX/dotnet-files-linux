@@ -80,12 +80,28 @@ fi
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 mkdir -p "$ZSH_CUSTOM/plugins"
 
-echo "[dotfiles] Ensuring Zsh plugins…"
-git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
-git clone https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
-git clone https://github.com/zsh-users/zsh-completions "$ZSH_CUSTOM/plugins/zsh-completions"
-git clone 
-echo "[dotfiles] Zsh plugins ready."
+install_plugin() {
+  local repo="$1"                                     # zsh-users/zsh-autosuggestions
+  local dir="$ZSH_CUSTOM/plugins/$(basename "$repo")"
+
+  if [[ -d "$dir/.git" ]]; then                       # schon geklont → update
+    echo "[dotfiles] Updating $(basename "$dir")…"
+    git -C "$dir" pull --ff-only --quiet
+  else                                                # noch nicht da → clone
+    echo "[dotfiles] Cloning $(basename "$dir")…"
+    git clone --depth 1 "https://github.com/$repo" "$dir"
+  fi
+}
+
+echo "[dotfiles] Ensuring Z‑sh plugins…"
+for repo in \
+  zsh-users/zsh-autosuggestions \
+  zsh-users/zsh-syntax-highlighting \
+  zsh-users/zsh-completions
+do
+  install_plugin "$repo"
+done
+echo "[dotfiles] Z‑sh plugins ready."
 
 ###############################################################################
 # 4. Atuin‑Installation + .zshrc‑Patch (ohne Marker)
