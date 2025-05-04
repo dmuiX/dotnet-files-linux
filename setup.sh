@@ -1,57 +1,101 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
+trap 'echo "[dotfiles] ERROR in line $LINENO"; exit 1' ERR
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "[dotfiles] Using dotfiles directory: $DOTFILES_DIR"
 
-echo "[dotfiles] Copying dotfiles from $DOTFILES_DIR to $HOME..."
-
-# Schleife über alle versteckten Dateien (beginnend mit .), aber keine .git oder .DS_Store etc.
+###############################################################################
+# 1. Dotfiles kopieren (. & .config) – immer überschreiben
+###############################################################################
 shopt -s dotglob nullglob
-for file in "$DOTFILES_DIR"/.*; do
-  filename=$(basename "$file")
 
-  # Ignoriere .git, ., .. und .DS_Store etc.
-  if [[ "$filename" == "." || "$filename" == ".." || "$filename" == ".git" || "$filename" == ".DS_Store" ]]; then
-    continue
-  fi
-
-  echo "[dotfiles] Copy $filename"
-  cp -rf "$file" "$HOME/$filename"
-  echo "[dotfiles] Copy $filename complete"
+echo "[dotfiles] Copying top‑level dotfiles (overwrite mode)…"
+for src in "$DOTFILES_DIR"/.*; do
+  name=$(basename "$src")
+  [[ "$name" =~ ^(\.|\.{2}|\.git|\.DS_Store)$ ]] && continue
+  echo "[dotfiles] Copy $name"
+  cp -a "$src" "$HOME/$name"
 done
+
+CFG_SRC="$DOTFILES_DIR/.config"
+CFG_DST="$HOME/.config"
+if [[ -d "$CFG_SRC" ]]; then
+  echo "[dotfiles] Copying .config (overwrite mode)…"
+  rsync -a --delete "$CFG_SRC"/ "$CFG_DST"/
+fi
 shopt -u dotglob nullglob
+echo "[dotfiles] Dotfiles copy complete."
 
-echo "[dotfiles] All dotfiles copied."
+###############################################################################
+# 2. Paket‑Abhängigkeiten (curl, git, zsh, gnupg)
+###############################################################################
+need_pkgs=(curl git zsh gnupg)
 
-# Install dependencies
-if command -v apt &> /dev/null; then
-  sudo apt-get update
-  sudo apt-get install -y curl gnupg2
+install_pkgs() {
+  case "$(uname -s)" in
+    Linux)
+      if command -v apt-get &>/dev/null; then
+        sudo -n true 2>/dev/null || { echo "[dotfiles] sudo required"; exit 1; }
+        sudo apt-get update -qq
+        sudo apt-get install -y "${need_pkgs[@]}"
+      elif command -v apk &>/dev/null; then
+        sudo apk add --no-cache "${need_pkgs[@]}"
+      elif command -v pacman &>/dev/null; then
+        sudo pacman -Sy --noconfirm "${need_pkgs[@]}"
+      fi
+      ;;
+  esac
+}
+
+for p in "${need_pkgs[@]}"; do
+  command -v "$p" &>/dev/null || { echo "[dotfiles] Installing $p…"; install_pkgs; break; }
+done
+
+###############################################################################
+# 3. Oh‑My‑Zsh + Plugins
+###############################################################################
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+  echo "[dotfiles] Installing Oh‑My‑Zsh…"
+  RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
-# Install Atuin
-curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh | bash
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+mkdir -p "$ZSH_CUSTOM/plugins"
 
-# Add Atuin init to .zshrc (only if not already present)
-if ! grep -q 'atuin init zsh' ~/.zshrc; then
-  echo '' >> ~/.zshrc
-  echo '# Initialize Atuin history sync' >> ~/.zshrc
-  echo 'eval "$(atuin init zsh)"' >> ~/.zshrc
+clone_plugin() {
+  local repo=$1 dir=$2
+  [[ -d "$dir" ]] || git clone --depth 1 "$repo" "$dir"
+}
+
+echo "[dotfiles] Ensuring Zsh plugins…"
+clone_plugin https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+clone_plugin https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+clone_plugin https://github.com/zsh-users/zsh-completions     "$ZSH_CUSTOM/plugins/zsh-completions"
+echo "[dotfiles] Zsh plugins ready."
+
+###############################################################################
+# 4. Atuin‑Installation + .zshrc‑Patch (dup‑safe)
+###############################################################################
+if ! command -v atuin &>/dev/null; then
+  echo "[dotfiles] Installing Atuin…"
+  curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh | bash
 fi
 
-echo "[dotfiles] Atuin installation complete."
+ZSHRC="$HOME/.zshrc"
+MARK_START="# >>> atuin init >>>"
+MARK_END="# <<< atuin init <<<"
 
-# Installiere Oh-My-Zsh nur, wenn es nicht existiert
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  echo "[dotfiles] Installing Oh-My-Zsh..."
-  RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+if ! grep -q "$MARK_START" "$ZSHRC" 2>/dev/null; then
+  echo "[dotfiles] Patching .zshrc for Atuin…"
+  {
+    echo ""
+    echo "$MARK_START"
+    echo 'eval "$(atuin init zsh)"'
+    echo "$MARK_END"
+  } >> "$ZSHRC"
 fi
 
-# clone plugins
-echo "[dotfiles] Start cloning zsh plugins."
-
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completions
-
-echo "[dotfiles] Cloning zsh plugins complete.
+###############################################################################
+echo "[dotfiles] Setup finished successfully."
