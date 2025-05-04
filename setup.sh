@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOTFILES_DIR="$HOME/dotfiles"
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "[dotfiles] Copying dotfiles from $DOTFILES_DIR to $HOME..."
 
