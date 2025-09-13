@@ -33,7 +33,7 @@ echo "[dotfiles] Dotfiles copy complete."
 # 2. Paket‑Abhängigkeiten (curl, git, zsh, gnupg)
 ###############################################################################
 
-need_pkgs=(curl git zsh gnupg bat)
+need_pkgs=(curl git zsh gnupg bat fontconfig)
 
 install_pkgs() {
   if command -v apt-get &>/dev/null; then                # Debian/Ubuntu
@@ -46,7 +46,13 @@ install_pkgs() {
 
   elif command -v pacman &>/dev/null; then               # Arch
     sudo pacman -Sy --noconfirm "${need_pkgs[@]}"
+  
+  elif command -v dnf &>/dev/null; then                   # Fedora/RHEL 8+
+    sudo dnf install -y "${need_pkgs[@]}"
 
+  elif command -v yum &>/dev/null; then                   # RHEL 7, CentOS 7
+    sudo yum install -y "${need_pkgs[@]}"
+  
   elif [[ $(uname -s) == Darwin ]]; then                 # macOS
     if ! command -v brew &>/dev/null; then
       echo "[dotfiles] Installing Homebrew…"
