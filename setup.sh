@@ -33,7 +33,7 @@ echo "[dotfiles] Dotfiles copy complete."
 # 2. Paket‑Abhängigkeiten (curl, git, zsh, gnupg)
 ###############################################################################
 
-need_pkgs=(curl git zsh gnupg bat fontconfig nala)
+need_pkgs=(curl git zsh gnupg bat fontconfig nala direnv)
 
 install_pkgs() {
   if command -v apt-get &>/dev/null; then                # Debian/Ubuntu
