@@ -75,6 +75,8 @@ zstyle ':completion:*' menu select
 fpath+=~/.zfunc
 PATH=/opt/docker-credential-pass:$PATH
 
+eval "$(direnv hook zsh)"
+
 . "$HOME/.atuin/bin/env"
 
 eval "$(atuin init zsh)"
