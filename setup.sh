@@ -33,25 +33,33 @@ echo "[dotfiles] Dotfiles copy complete."
 # 2. Paket‑Abhängigkeiten (curl, git, zsh, gnupg)
 ###############################################################################
 
-need_pkgs=(curl git zsh gnupg bat fontconfig nala direnv)
+need_pkgs=(curl git zsh gnupg bat fontconfig nala direnv btop lsof)
 
 install_pkgs() {
+  local pkgs=("${need_pkgs[@]}")
+
   if command -v apt-get &>/dev/null; then                # Debian/Ubuntu
+    pkgs+=(dnsutils netcat-openbsd)
+
     sudo -n true 2>/dev/null || { echo "[dotfiles] sudo required"; exit 1; }
     sudo apt-get update -qq
-    sudo apt-get install -y "${need_pkgs[@]}"
+    sudo apt-get install -y "${pkgs[@]}"
 
   elif command -v apk &>/dev/null; then                  # Alpine
-    sudo apk add --no-cache "${need_pkgs[@]}"
+    pkgs+=(bind-tools netcat-openbsd)
+    sudo apk add --no-cache "${pkgs[@]}"
 
   elif command -v pacman &>/dev/null; then               # Arch
-    sudo pacman -Sy --noconfirm "${need_pkgs[@]}"
+    pkgs+=(bind-tools gnu-netcat)
+    sudo pacman -Sy --noconfirm "${pkgs[@]}"
   
   elif command -v dnf &>/dev/null; then                   # Fedora/RHEL 8+
-    sudo dnf install -y "${need_pkgs[@]}"
+    pkgs+=(bind-utils nmap-ncat) 
+    sudo dnf install -y "${pkgs[@]}"
 
   elif command -v yum &>/dev/null; then                   # RHEL 7, CentOS 7
-    sudo yum install -y "${need_pkgs[@]}"
+    pkgs+=(bind-utils nmap-ncat)
+    sudo yum install -y "${pkgs[@]}"
   
   elif [[ $(uname -s) == Darwin ]]; then                 # macOS
     if ! command -v brew &>/dev/null; then
@@ -61,7 +69,7 @@ install_pkgs() {
       eval "$(/usr/local/bin/brew shellenv)"
     fi
     brew update
-    brew install "${need_pkgs[@]}"
+    brew install "${pkgs[@]}"
 
   else
     echo "[dotfiles] Unsupported OS: $(uname -s)" >&2
