@@ -23,6 +23,7 @@ plugins=(
     ruby
     rbenv
     doctl
+    direnv
 )
 
 #if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -74,8 +75,6 @@ autoload -Uz compinit; compinit -u
 zstyle ':completion:*' menu select
 fpath+=~/.zfunc
 PATH=/opt/docker-credential-pass:$PATH
-
-eval "$(direnv hook zsh)"
 
 . "$HOME/.atuin/bin/env"
 
