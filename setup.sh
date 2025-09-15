@@ -33,13 +33,13 @@ echo "[dotfiles] Dotfiles copy complete."
 # 2. Paket‑Abhängigkeiten (curl, git, zsh, gnupg)
 ###############################################################################
 
-need_pkgs=(curl git zsh gnupg bat fontconfig nala direnv btop lsof)
+need_pkgs=(curl git zsh gnupg bat fontconfig direnv btop lsof)
 
 install_pkgs() {
   local pkgs=("${need_pkgs[@]}")
 
   if command -v apt-get &>/dev/null; then                # Debian/Ubuntu
-    pkgs+=(dnsutils netcat-openbsd)
+    pkgs+=(dnsutils netcat-openbsd nala)
 
     sudo -n true 2>/dev/null || { echo "[dotfiles] sudo required"; exit 1; }
     sudo apt-get update -qq
