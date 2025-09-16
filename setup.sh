@@ -44,7 +44,7 @@ install_pkgs() {
     sudo apt-get install -y "${pkgs[@]}"
 
   elif command -v apk &>/dev/null; then                  # Alpine
-    pkgs+=(bind-tools netcat-openbsd)
+    pkgs+=(bind-tools netcat-openbsd shadow)
     sudo apk add --no-cache "${pkgs[@]}"
 
   elif command -v pacman &>/dev/null; then               # Arch
@@ -178,6 +178,22 @@ if grep -q '^ZSH_THEME=' ~/.zshrc; then
   sed -i.bak 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
 else
   echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> ~/.zshrc
+fi
+
+###############################################################################
+# 7. Change default shell to zsh
+###############################################################################
+
+if [[ "$SHELL" != *"zsh"* ]]; then
+  ZSH_PATH=$(command -v zsh)
+  
+  # Ensure zsh is in /etc/shells
+  echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null 2>&1
+  
+  echo "[dotfiles] Changing shell to zsh..."
+  chsh -s "$ZSH_PATH"
+  
+  echo "[dotfiles] Shell changed to zsh. Please log out/in to activate."
 fi
 
 ###############################################################################
