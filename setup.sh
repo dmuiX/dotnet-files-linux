@@ -40,8 +40,6 @@ install_pkgs() {
 
   if command -v apt-get &>/dev/null; then                # Debian/Ubuntu
     pkgs+=(dnsutils netcat-openbsd nala)
-
-    sudo -n true 2>/dev/null || { echo "[dotfiles] sudo required"; exit 1; }
     sudo apt-get update -qq
     sudo apt-get install -y "${pkgs[@]}"
 
