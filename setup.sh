@@ -33,7 +33,7 @@ echo "[dotfiles] Dotfiles copy complete."
 # 2. Paket‑Abhängigkeiten (curl, git, zsh, gnupg)
 ###############################################################################
 
-need_pkgs=(curl git zsh gnupg bat fontconfig direnv btop lsof)
+need_pkgs=(curl wget git zsh gnupg bat fontconfig direnv btop lsof)
 
 install_pkgs() {
   local pkgs=("${need_pkgs[@]}")
