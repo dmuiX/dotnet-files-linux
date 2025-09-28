@@ -191,7 +191,7 @@ if [[ "$SHELL" != *"zsh"* ]]; then
   echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null 2>&1
   
   echo "[dotfiles] Changing shell to zsh..."
-  chsh -s "$ZSH_PATH"
+  sudo chsh -s "$ZSH_PATH"
   
   echo "[dotfiles] Shell changed to zsh. Please log out/in to activate."
 fi
